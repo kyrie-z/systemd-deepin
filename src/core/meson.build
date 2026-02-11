@@ -55,6 +55,8 @@ libcore_sources = files(
         'scope.c',
         'selinux-access.c',
         'selinux-setup.c',
+        'umac-setup.c',
+        'umac-access.c',
         'service.c',
         'show-status.c',
         'slice.c',

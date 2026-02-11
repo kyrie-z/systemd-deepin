@@ -149,6 +149,7 @@ shared_sources = files(
         'rm-rf.c',
         'securebits-util.c',
         'selinux-util.c',
+        'umac-util.c',
         'serialize.c',
         'service-util.c',
         'sleep-config.c',
