@@ -14,7 +14,6 @@
 #include "log.h"
 #include "macro.h"
 #include "selinux-setup.h"
-#include "umac-setup.h"
 #include "selinux-util.h"
 #include "string-util.h"
 #include "time-util.h"
@@ -102,6 +101,5 @@ int mac_selinux_setup(bool *loaded_policy) {
                         log_debug("Unable to load SELinux policy. Ignoring.");
         }
 #endif
-        umac_setup(loaded_policy);
         return 0;
 }
