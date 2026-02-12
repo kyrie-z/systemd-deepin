@@ -362,6 +362,8 @@ option('seccomp', type : 'feature', deprecated : { 'true' : 'enabled', 'false' :
        description : 'SECCOMP support')
 option('selinux', type : 'feature', deprecated : { 'true' : 'enabled', 'false' : 'disabled' },
        description : 'SELinux support')
+option('usec', type : 'feature', deprecated : { 'true' : 'enabled', 'false' : 'disabled' },
+       description : 'USEC support')
 option('apparmor', type : 'feature', deprecated : { 'true' : 'enabled', 'false' : 'disabled' },
        description : 'AppArmor support')
 option('smack', type : 'boolean',

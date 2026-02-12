@@ -97,6 +97,8 @@
 #include "version.h"
 #include "virt.h"
 #include "watchdog.h"
+#include "umac-setup.h"
+#include "umac-util.h"
 
 #if HAS_FEATURE_ADDRESS_SANITIZER
 #include <sanitizer/lsan_interface.h>
@@ -2679,6 +2681,12 @@ static int initialize_security(
                 return r;
         }
 
+        r = mac_usec_setup(loaded_policy);
+        if (r < 0) {
+                *ret_error_message = "Failed to load USEC policy";
+        }
+
+
         r = mac_smack_setup(loaded_policy);
         if (r < 0) {
                 *ret_error_message = "Failed to load SMACK policy";
@@ -3131,6 +3139,7 @@ finish:
         }
 
         mac_selinux_finish();
+        mac_usec_finish();
 
         if (IN_SET(r, MANAGER_REEXECUTE, MANAGER_SWITCH_ROOT, MANAGER_SOFT_REBOOT))
                 r = do_reexecute(r,

@@ -1,19 +1,19 @@
 /* SPDX-License-Identifier: LGPL-2.1+ */
 
-#if HAVE_SELINUX
-#include <selinux/selinux.h>
-#include <selinux/usec.h>
+#if HAVE_USEC
+#include <usec/usec.h>
+#include <usec/avc.h>
 #endif
 #include "umac-util.h"
 #include "string-util.h"
 #include "log.h"
 
-#if HAVE_SELINUX
+#if HAVE_USEC
 static int cached_use = -1;
 #endif
 
 bool umac_use(void) {
-#if HAVE_SELINUX
+#if HAVE_USEC
         if (cached_use < 0){
                 cached_use = is_usec_enabled() > 0;
                 log_trace("USEC enabled state cached to: %s", enabled_disabled(cached_use));
@@ -26,7 +26,7 @@ bool umac_use(void) {
 }
 
 void umac_reset(void) {
-#if HAVE_SELINUX
+#if HAVE_USEC
         cached_use = -1;
 #endif
 }
@@ -34,9 +34,17 @@ void umac_reset(void) {
 int umac_init(void) {
         int r = 0;
 
-#if HAVE_SELINUX
+#if HAVE_USEC
         if (!umac_use())
                 return 0;
 #endif
         return r;
+}
+
+void mac_usec_finish(void) {
+
+#if HAVE_USEC
+        usec_status_close();
+
+#endif
 }

@@ -102,6 +102,5 @@ int mac_selinux_setup(bool *loaded_policy) {
                         log_debug("Unable to load SELinux policy. Ignoring.");
         }
 #endif
-        umac_setup(loaded_policy);
         return 0;
 }

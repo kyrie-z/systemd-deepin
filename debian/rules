@@ -92,6 +92,7 @@ CONFFLAGS = \
 	-Dfdisk=enabled \
 	-Dsysext=true \
 	-Dnscd=true \
+	-Dusec=enabled \
 	-Dselinux=enabled \
 	-Dhwdb=true \
 	-Dsysusers=true \

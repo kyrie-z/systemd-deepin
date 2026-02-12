@@ -6,3 +6,5 @@
 bool umac_use(void);
 void umac_reset(void);
 int umac_init(void);
+
+void mac_usec_finish(void);

@@ -2,13 +2,11 @@
 
 #include "selinux-access.h"
 
-#if HAVE_SELINUX
+#if HAVE_USEC
 
 #include <errno.h>
-#include <selinux/avc.h>
-#include <selinux/uavc.h>
-#include <selinux/usec.h>
-#include <selinux/selinux.h>
+#include <usec/avc.h>
+#include <usec/usec.h>
 #include <stdio.h>
 #include <sys/xattr.h>
 #if HAVE_AUDIT
@@ -22,7 +20,6 @@
 #include "bus-util.h"
 #include "log.h"
 #include "path-util.h"
-#include "selinux-util.h"
 #include "umac-util.h"
 #include "stdio-util.h"
 #include "strv.h"
@@ -38,7 +35,7 @@ static bool initialized = false;
 */
 static int audit_callback2(
                 void *auditdata,
-                security_class_t cls,
+                usec_security_class_t cls,
                 char *msgbuf,
                 size_t msgbufsize) {
 
@@ -66,7 +63,7 @@ static int audit_callback2(
 }
 
 /*
-   libselinux uses this callback when access gets denied or other
+   libusec uses this callback when access gets denied or other
    events happen. If audit is turned on, messages will be reported
    using audit netlink, otherwise they will be logged using the usual
    channels.
@@ -107,10 +104,10 @@ static int access_init2(sd_bus_error *error) {
         if (initialized)
                 return 1;
 
-        if (uavc_open(NULL, 0) != 0) {
+        if (usec_avc_open(NULL, 0) != 0) {
                 int enforce, saved_errno = errno;
 
-                enforce = security_getenforce();
+                enforce = usec_security_getenforce();
                 log_full_errno(enforce != 0 ? LOG_ERR : LOG_WARNING, saved_errno, "Failed to open the USEC AVC: %m");
 
                 /* If enforcement isn't on, then let's suppress this
@@ -120,14 +117,14 @@ static int access_init2(sd_bus_error *error) {
                 return 0;
         }
 
-        selinux_set_callback(SELINUX_CB_AUDIT, (union selinux_callback) audit_callback2);
-        selinux_set_callback(SELINUX_CB_LOG, (union selinux_callback) log_callback2);
+        usec_set_callback(USEC_CB_AUDIT, (union usec_callback) audit_callback2);
+        usec_set_callback(USEC_CB_LOG, (union usec_callback) log_callback2);
 
         initialized = true;
         return 1;
 }
 
-static int mac_selinux_getfilecon2(const char *path, char **con) {
+static int mac_usec_getfilecon(const char *path, char **con) {
         char *context = NULL;
         int r = 0;
 
@@ -152,7 +149,7 @@ static int mac_selinux_getfilecon2(const char *path, char **con) {
         return 0;
 }
 
-static int mac_selinux_freecon2(char *con) {
+static int mac_usec_freecon(char *con) {
         if (con != NULL)
                 free(con);
         return 0;
@@ -251,7 +248,7 @@ int umac_unit_access_check(
         if (r < 0)
                 goto finish;
 
-        r = mac_selinux_getfilecon2(unit_path, &fcon2);
+        r = mac_usec_getfilecon(unit_path, &fcon2);
         if (r < 0)
                 goto finish;
 
@@ -281,18 +278,18 @@ int umac_unit_access_check(
         audit_info.function = function;
         audit_info.avc_type = AVC_TYPE_USID;
 
-        r = selinux_check_access(scon, fcon, tclass, permission, &audit_info);
+        r = usec_check_access(scon, fcon, tclass, permission, &audit_info);
         if (r < 0)
                 r = sd_bus_error_setf(error, SD_BUS_ERROR_ACCESS_DENIED, "UMAC policy denies access.");
 
         log_debug("UMAC access check scon=%s tcon=%s tclass=%s perm=%s function=%s path=%s cmdline=%s: %i", scon, fcon, tclass, permission, function,unit_path, cl, r);
 
 finish:
-        mac_selinux_freecon2(fcon2);
+        mac_usec_freecon(fcon2);
         if (scon2 != NULL)
                 free(scon2);
 
-        if (r < 0 && security_getenforce() != 1) {
+        if (r < 0 && usec_security_getenforce() != 1) {
                 sd_bus_error_free(error);
                 r = 0;
         }
